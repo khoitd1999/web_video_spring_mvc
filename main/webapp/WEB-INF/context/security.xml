@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+     
+     <!-- intercept-url : check login. if the user have logined ,check Have this user's role admin ? -->
+     <!-- access-denied-handler: when have login and role is USER . if try access url :" admin* " -> access denied-->
+     <!-- login-processing-url get submit action -->  
+     <!--  authentication-success-handler-ref : if true , go to customSuccessHandler --> 
+     <!--  authentication-failure-url : if true , go to page dang-nhap?incorrectAccount --> 
+     <!-- session-management invalid-session-url: auto logout when user do not manipulation -->     
+     
+    <http auto-config="false" use-expressions="true" disable-url-rewriting="true">
+    	<intercept-url pattern="/admin*" access="hasAnyRole('ADMIN')"/> 
+    	
+    	<access-denied-handler error-page="/accessDenied" />
+        <form-login  login-page="/dang-nhap"
+                     username-parameter="j_username"
+                     password-parameter="j_password"
+                     login-processing-url="/j_spring_security_check"           
+                     authentication-success-handler-ref = "customSuccessHandler"       
+                     authentication-failure-url = "/dang-nhap?incorrectAccount"/>
+        <session-management invalid-session-url="/dang-nhap?sessionTimeout"/>
+        <logout delete-cookies="JSESSIONID"/>
+    </http>
+      
+    <authentication-manager >
+        <authentication-provider user-service-ref="customUserDetailsService">
+        		<password-encoder ref="bcryptEncoder"/>
+        </authentication-provider>
+    </authentication-manager>
+    
+    <beans:bean id="bcryptEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+    <beans:bean id="customUserDetailsService" class="com.laptrinhweb.service.impl.CustomUserDetailsService" />
+    <beans:bean id="customSuccessHandler" class="com.laptrinhweb.security.CustomSuccessHandler" />
+</beans:beans>
